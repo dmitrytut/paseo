@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Added find-in-terminal (Cmd+F / Ctrl+F) with next/previous navigation and match count ([#1](https://github.com/dmitrytut/paseo/pull/1))
+
 ## 0.8.0 - 2026-09-10
 
 Paseo 0.8 adds plugin header buttons, custom providers, and richer chat components, alongside fixes for desktop updates and mobile keyboards.
