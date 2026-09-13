@@ -163,15 +163,21 @@ function isTerminalState(value: unknown): value is TerminalState {
 }
 
 function isFindInput(value: unknown): value is TerminalFindInput {
-  if (typeof value !== "object" || value === null) {
+  if (
+    typeof value !== "object" ||
+    value === null ||
+    !("query" in value) ||
+    !("direction" in value)
+  ) {
     return false;
   }
-  const candidate = value as { query?: unknown; direction?: unknown; caseSensitive?: unknown };
-  return (
-    typeof candidate.query === "string" &&
-    (candidate.direction === "next" || candidate.direction === "previous") &&
-    (candidate.caseSensitive === undefined || typeof candidate.caseSensitive === "boolean")
-  );
+  if (
+    typeof value.query !== "string" ||
+    (value.direction !== "next" && value.direction !== "previous")
+  ) {
+    return false;
+  }
+  return !("caseSensitive" in value) || typeof value.caseSensitive === "boolean";
 }
 
 export default function TerminalEmulator({
