@@ -584,6 +584,14 @@ export const ja: TranslationResources = {
       hostDisconnected: "ホストが接続されていません",
       updateHost: "ネイティブターミナルを使用するにはホストを更新してください。",
       unableToSubscribe: "ターミナルに接続できません",
+      find: {
+        placeholder: "ターミナル内を検索",
+        matchCount: "{{total}} 件中 {{current}} 件目",
+        noMatches: "一致する結果がありません",
+        previousMatch: "前の一致",
+        nextMatch: "次の一致",
+        close: "検索を閉じる",
+      },
     },
     tabs: {
       loading: "読み込み中...",

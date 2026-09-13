@@ -355,6 +355,9 @@ export default function WebViewTerminalEmulator({
         );
         Keyboard.dismiss();
       },
+      // The WebView renderer has no xterm-style search backend; find is web/desktop-only.
+      find: () => {},
+      clearFind: () => {},
     }),
     [sendToWebView, streamKey],
   );

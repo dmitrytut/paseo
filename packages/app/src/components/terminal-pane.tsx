@@ -54,6 +54,7 @@ import { useSessionStore } from "@/stores/session-store";
 import { toXtermTheme } from "@/utils/to-xterm-theme";
 import TerminalEmulator, { type TerminalEmulatorHandle } from "./terminal-emulator";
 import { TerminalFloatingCopyAction, TerminalPasteAction } from "./terminal-copy-paste-actions";
+import { TerminalFindBar } from "./terminal-find-bar";
 import {
   createTerminalResizeDebouncer,
   type TerminalResizeRequest,
@@ -111,6 +112,12 @@ type PendingTerminalInput =
       type: "key";
       input: TerminalKeyInput;
     };
+
+type TerminalFindState =
+  | { status: "closed" }
+  | { status: "open"; query: string; matchIndex: number; matchCount: number };
+
+const TERMINAL_FIND_CLOSED: TerminalFindState = { status: "closed" };
 
 function terminalScopeKey(input: { serverId: string; cwd: string }): string {
   return `${input.serverId}:${input.cwd}`;
@@ -265,6 +272,7 @@ export function TerminalPane({
   const [isKeyboardToggleVisible, setIsKeyboardToggleVisible] = useState(false);
   const [focusRequestToken, setFocusRequestToken] = useState(0);
   const [resizeRequestToken, setResizeRequestToken] = useState(0);
+  const [findState, setFindState] = useState<TerminalFindState>(TERMINAL_FIND_CLOSED);
   useBlockMobilePanelOpenGestures(isMobile && isWorkspaceFocused && isPaneFocused && hasSelection);
   const emulatorRef = useRef<TerminalEmulatorHandle>(null);
   const terminalIdRef = useRef<string>(terminalId);
@@ -281,6 +289,7 @@ export function TerminalPane({
     terminalIdRef.current = terminalId;
     inputModeRef.current = DEFAULT_TERMINAL_INPUT_MODE_STATE;
     setHasSelection(false);
+    setFindState(TERMINAL_FIND_CLOSED);
   }, [terminalId]);
 
   const refreshClipboardAvailability = useCallback(async () => {
@@ -318,6 +327,43 @@ export function TerminalPane({
   const requestTerminalReflow = useCallback(() => {
     setResizeRequestToken((current) => current + 1);
   }, []);
+
+  const handleFindRequested = useCallback(() => {
+    setFindState({ status: "open", query: "", matchIndex: 0, matchCount: 0 });
+  }, []);
+  const handleFindResultsChange = useCallback(
+    (input: { resultIndex: number; resultCount: number }) => {
+      setFindState((current) =>
+        current.status === "open"
+          ? { ...current, matchIndex: input.resultIndex, matchCount: input.resultCount }
+          : current,
+      );
+    },
+    [],
+  );
+  const handleFindQueryChange = useCallback((query: string) => {
+    setFindState((current) => (current.status === "open" ? { ...current, query } : current));
+    if (query.length === 0) {
+      emulatorRef.current?.clearFind();
+      return;
+    }
+    emulatorRef.current?.find({ query, direction: "next" });
+  }, []);
+  const handleFindNext = useCallback(() => {
+    if (findState.status === "open" && findState.query.length > 0) {
+      emulatorRef.current?.find({ query: findState.query, direction: "next" });
+    }
+  }, [findState]);
+  const handleFindPrevious = useCallback(() => {
+    if (findState.status === "open" && findState.query.length > 0) {
+      emulatorRef.current?.find({ query: findState.query, direction: "previous" });
+    }
+  }, [findState]);
+  const handleFindClose = useCallback(() => {
+    emulatorRef.current?.clearFind();
+    setFindState(TERMINAL_FIND_CLOSED);
+    requestTerminalFocus();
+  }, [requestTerminalFocus]);
   useEffect(() => {
     if (!isMobile || !isWorkspaceFocused || mobileView === "agent") {
       return;
@@ -1047,6 +1093,8 @@ export function TerminalPane({
             onResize={handleTerminalResize}
             onTerminalKey={handleTerminalKey}
             onInputModeChange={handleInputModeChange}
+            onFindRequested={handleFindRequested}
+            onFindResultsChange={handleFindResultsChange}
             onSelectionChange={handleSelectionChange}
             onResolveLocalFileLink={handleResolveLocalFileLink}
             onOpenLocalFileLink={handleOpenLocalFileLink}
@@ -1067,6 +1115,18 @@ export function TerminalPane({
           <View pointerEvents="box-none" style={styles.floatingCopyContainer}>
             <TerminalFloatingCopyAction hasSelection={hasSelection} onCopy={handleTerminalCopy} />
           </View>
+        ) : null}
+
+        {findState.status === "open" ? (
+          <TerminalFindBar
+            query={findState.query}
+            matchIndex={findState.matchIndex}
+            matchCount={findState.matchCount}
+            onChangeQuery={handleFindQueryChange}
+            onNext={handleFindNext}
+            onPrevious={handleFindPrevious}
+            onClose={handleFindClose}
+          />
         ) : null}
       </View>
 

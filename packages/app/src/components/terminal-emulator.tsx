@@ -50,6 +50,8 @@ export interface TerminalEmulatorHandle {
   claimSize: () => void;
   showKeyboard: () => void;
   blur: () => void;
+  find: (input: { query: string; direction: "next" | "previous"; caseSensitive?: boolean }) => void;
+  clearFind: () => void;
 }
 
 const HOST_DIV_STYLE: CSSProperties = {
@@ -128,6 +130,8 @@ interface TerminalEmulatorProps {
   }) => Promise<void> | void;
   onPendingModifiersConsumed?: () => Promise<void> | void;
   onInputModeChange?: (state: TerminalInputModeState) => Promise<void> | void;
+  onFindRequested?: () => void;
+  onFindResultsChange?: (input: { resultIndex: number; resultCount: number }) => void;
   onSelectionChange?: (hasSelection: boolean) => void;
   onResolveLocalFileLink?: (
     source: TerminalLocalFileLinkSource,
@@ -156,6 +160,20 @@ function isTerminalState(value: unknown): value is TerminalState {
   );
 }
 
+function isFindInput(
+  value: unknown,
+): value is { query: string; direction: "next" | "previous"; caseSensitive?: boolean } {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+  const candidate = value as { query?: unknown; direction?: unknown; caseSensitive?: unknown };
+  return (
+    typeof candidate.query === "string" &&
+    (candidate.direction === "next" || candidate.direction === "previous") &&
+    (candidate.caseSensitive === undefined || typeof candidate.caseSensitive === "boolean")
+  );
+}
+
 export default function TerminalEmulator({
   ref,
   streamKey,
@@ -178,6 +196,8 @@ export default function TerminalEmulator({
   onTerminalKey,
   onPendingModifiersConsumed,
   onInputModeChange,
+  onFindRequested,
+  onFindResultsChange,
   onResolveLocalFileLink,
   onOpenLocalFileLink,
   onRendererReadyChange,
@@ -206,6 +226,8 @@ export default function TerminalEmulator({
     onTerminalKey,
     onPendingModifiersConsumed,
     onInputModeChange,
+    onFindRequested,
+    onFindResultsChange,
     onResolveLocalFileLink,
     onOpenLocalFileLink,
   });
@@ -215,6 +237,8 @@ export default function TerminalEmulator({
     onTerminalKey,
     onPendingModifiersConsumed,
     onInputModeChange,
+    onFindRequested,
+    onFindResultsChange,
     onResolveLocalFileLink,
     onOpenLocalFileLink,
   };
@@ -277,6 +301,15 @@ export default function TerminalEmulator({
       blur: () => {
         runtimeRef.current?.blur();
       },
+      find: (...args) => {
+        const input = args[0];
+        if (isFindInput(input)) {
+          runtimeRef.current?.find(input);
+        }
+      },
+      clearFind: () => {
+        runtimeRef.current?.clearFind();
+      },
     }),
     [pasteText],
   );
@@ -308,6 +341,12 @@ export default function TerminalEmulator({
       },
       blur: () => {
         runtimeRef.current?.blur();
+      },
+      find: (input: { query: string; direction: "next" | "previous"; caseSensitive?: boolean }) => {
+        runtimeRef.current?.find(input);
+      },
+      clearFind: () => {
+        runtimeRef.current?.clearFind();
       },
     }),
     [pasteText],
@@ -483,6 +522,8 @@ export default function TerminalEmulator({
         onTerminalKey,
         onPendingModifiersConsumed,
         onInputModeChange,
+        onFindRequested,
+        onFindResultsChange,
         onResolveLocalFileLink,
         onOpenLocalFileLink,
         onOpenExternalUrl: openExternalUrl,
@@ -491,6 +532,8 @@ export default function TerminalEmulator({
   }, [
     onInput,
     onInputModeChange,
+    onFindRequested,
+    onFindResultsChange,
     onOpenLocalFileLink,
     onPendingModifiersConsumed,
     onResolveLocalFileLink,

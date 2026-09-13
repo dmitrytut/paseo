@@ -584,6 +584,14 @@ export const fr: TranslationResources = {
       hostDisconnected: "Hostn'est pas connecté",
       updateHost: "Mettez à jour l’hôte pour utiliser le terminal natif.",
       unableToSubscribe: "Impossible de s'abonner au terminal",
+      find: {
+        placeholder: "Rechercher dans le terminal",
+        matchCount: "{{current}} sur {{total}}",
+        noMatches: "Aucun résultat",
+        previousMatch: "Occurrence précédente",
+        nextMatch: "Occurrence suivante",
+        close: "Fermer la recherche",
+      },
     },
     tabs: {
       loading: "Chargement...",

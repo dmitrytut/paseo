@@ -579,6 +579,14 @@ export const ar: TranslationResources = {
       hostDisconnected: "Host غير متصل",
       updateHost: "حدّث المضيف لاستخدام عارض الطرفية الأصلي.",
       unableToSubscribe: "غير قادر على الاشتراك في المحطة",
+      find: {
+        placeholder: "البحث في الطرفية",
+        matchCount: "{{current}} من {{total}}",
+        noMatches: "لا توجد نتائج",
+        previousMatch: "النتيجة السابقة",
+        nextMatch: "النتيجة التالية",
+        close: "إغلاق البحث",
+      },
     },
     tabs: {
       loading: "تحميل...",

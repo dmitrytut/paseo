@@ -580,6 +580,14 @@ export const ko: TranslationResources = {
       hostDisconnected: "호스트가 연결되어 있지 않습니다",
       updateHost: "기본 터미널 렌더러를 사용하도록 호스트를 업데이트합니다.",
       unableToSubscribe: "터미널을 구독할 수 없습니다",
+      find: {
+        placeholder: "터미널에서 찾기",
+        matchCount: "{{total}}개 중 {{current}}번째",
+        noMatches: "검색 결과 없음",
+        previousMatch: "이전 항목",
+        nextMatch: "다음 항목",
+        close: "검색 닫기",
+      },
     },
     tabs: {
       loading: "불러오는 중...",

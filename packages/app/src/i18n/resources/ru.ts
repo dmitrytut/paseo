@@ -585,6 +585,14 @@ export const ru: TranslationResources = {
       hostDisconnected: "Хост не подключён",
       updateHost: "Обновите хост, чтобы использовать нативный рендерер терминала.",
       unableToSubscribe: "Не удалось подключиться к терминалу",
+      find: {
+        placeholder: "Поиск в терминале",
+        matchCount: "{{current}} из {{total}}",
+        noMatches: "Нет результатов",
+        previousMatch: "Предыдущее совпадение",
+        nextMatch: "Следующее совпадение",
+        close: "Закрыть поиск",
+      },
     },
     tabs: {
       loading: "Загрузка...",

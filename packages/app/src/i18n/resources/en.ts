@@ -577,6 +577,14 @@ export const en = {
       hostDisconnected: "Host is not connected",
       updateHost: "Update the host to use the native terminal renderer.",
       unableToSubscribe: "Unable to subscribe to terminal",
+      find: {
+        placeholder: "Find in terminal",
+        matchCount: "{{current}} of {{total}}",
+        noMatches: "No results",
+        previousMatch: "Previous match",
+        nextMatch: "Next match",
+        close: "Close search",
+      },
     },
     tabs: {
       loading: "Loading...",

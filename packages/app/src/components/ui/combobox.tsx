@@ -20,6 +20,7 @@ import {
   type LayoutChangeEvent,
   type PressableStateCallbackType,
   type StyleProp,
+  type TextInputProps,
   type ViewStyle,
 } from "react-native";
 import { createPortal } from "react-dom";
@@ -181,6 +182,7 @@ export interface SearchInputProps {
   placeholder: string;
   onChangeText: (text: string) => void;
   onSubmitEditing?: () => void;
+  onKeyPress?: TextInputProps["onKeyPress"];
   autoFocus?: boolean;
   useBottomSheetInput?: boolean;
   resetKey?: string | number;
@@ -190,6 +192,7 @@ export function SearchInput({
   placeholder,
   onChangeText,
   onSubmitEditing,
+  onKeyPress,
   autoFocus = false,
   useBottomSheetInput: _useBottomSheetInput = false,
   resetKey,
@@ -220,6 +223,7 @@ export function SearchInput({
         autoCapitalize="none"
         autoCorrect={false}
         onSubmitEditing={onSubmitEditing}
+        onKeyPress={onKeyPress}
       />
     </View>
   );

@@ -21,6 +21,8 @@ export interface TerminalEmulatorHandle {
   claimSize: () => void;
   showKeyboard: () => void;
   blur: () => void;
+  find: (input: { query: string; direction: "next" | "previous"; caseSensitive?: boolean }) => void;
+  clearFind: () => void;
 }
 
 export interface TerminalEmulatorProps {
@@ -57,6 +59,8 @@ export interface TerminalEmulatorProps {
   onPendingModifiersConsumed?: () => Promise<void> | void;
   onInputModeChange?: (state: TerminalInputModeState) => Promise<void> | void;
   onSelectionChange?: (hasSelection: boolean) => void;
+  onFindRequested?: () => void;
+  onFindResultsChange?: (input: { resultIndex: number; resultCount: number }) => void;
   onResolveLocalFileLink?: (
     source: TerminalLocalFileLinkSource,
   ) => Promise<TerminalLocalFileLinkTarget | null> | TerminalLocalFileLinkTarget | null;

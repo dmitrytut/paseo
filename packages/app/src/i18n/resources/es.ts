@@ -584,6 +584,14 @@ export const es: TranslationResources = {
       hostDisconnected: "Hostno está conectado",
       updateHost: "Actualiza el host para usar el renderizador de terminal nativo.",
       unableToSubscribe: "No se puede suscribir al terminal",
+      find: {
+        placeholder: "Buscar en la terminal",
+        matchCount: "{{current}} de {{total}}",
+        noMatches: "Sin resultados",
+        previousMatch: "Coincidencia anterior",
+        nextMatch: "Coincidencia siguiente",
+        close: "Cerrar búsqueda",
+      },
     },
     tabs: {
       loading: "Cargando...",

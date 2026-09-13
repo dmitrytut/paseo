@@ -62,6 +62,8 @@ export interface TerminalEmulatorRuntimeCallbacks {
     disposition: "main" | "side",
   ) => Promise<void> | void;
   onInputModeChange?: (state: TerminalInputModeState) => Promise<void> | void;
+  onFindRequested?: () => void;
+  onFindResultsChange?: (input: { resultIndex: number; resultCount: number }) => void;
 }
 
 export interface TerminalResizeEvent {
@@ -164,6 +166,13 @@ function withOverviewRulerBorderHidden(theme: ITheme): ITheme {
   };
 }
 
+function isTerminalFindCombo(event: KeyboardEvent, isMacPlatform: boolean): boolean {
+  if (event.key.toLowerCase() !== "f" || event.shiftKey || event.altKey) {
+    return false;
+  }
+  return isMacPlatform ? event.metaKey && !event.ctrlKey : event.ctrlKey && !event.metaKey;
+}
+
 export class TerminalEmulatorRuntime {
   private callbacks: TerminalEmulatorRuntimeCallbacks = {};
   private pendingModifiers: PendingTerminalModifiers = {
@@ -193,6 +202,7 @@ export class TerminalEmulatorRuntime {
   private readonly inputModeTracker = new TerminalInputModeTracker();
   private lastInputModeState: TerminalInputModeState = this.inputModeTracker.getState();
   private themeBackgroundElements: HTMLElement[] = [];
+  private searchAddon: SearchAddon | null = null;
 
   private handleVisibilityRestore = (): void => {
     if (typeof document !== "undefined" && document.visibilityState !== "visible") {
@@ -267,7 +277,15 @@ export class TerminalEmulatorRuntime {
         },
       }),
     );
-    terminal.loadAddon(new SearchAddon({ highlightLimit: 20_000 }));
+    const searchAddon = new SearchAddon({ highlightLimit: 20_000 });
+    searchAddon.onDidChangeResults((results) => {
+      this.callbacks.onFindResultsChange?.({
+        resultIndex: results.resultIndex,
+        resultCount: results.resultCount,
+      });
+    });
+    terminal.loadAddon(searchAddon);
+    this.searchAddon = searchAddon;
     terminal.loadAddon(new ClipboardAddon());
     try {
       terminal.loadAddon(new LigaturesAddon());
@@ -418,28 +436,15 @@ export class TerminalEmulatorRuntime {
         return true;
       }
 
-      if (!isMac && event.ctrlKey && !event.shiftKey && !event.altKey && !event.metaKey) {
-        const key = event.key.toLowerCase();
+      if (isTerminalFindCombo(event, isMac)) {
+        event.preventDefault();
+        this.callbacks.onFindRequested?.();
+        return false;
+      }
 
-        // Ctrl+C: copy selection to clipboard if text is selected, otherwise let xterm send SIGINT
-        if (key === "c" && terminal.hasSelection()) {
-          void navigator.clipboard.writeText(terminal.getSelection());
-          return false;
-        }
-
-        // Ctrl+V: paste from clipboard into terminal
-        if (key === "v") {
-          event.preventDefault();
-          void navigator.clipboard.readText().then((text) => {
-            if (text) {
-              terminal.paste(text);
-            }
-            return;
-          });
-          return false;
-        }
-
-        return true;
+      const clipboardResult = this.interceptNonMacClipboardShortcut(event, terminal);
+      if (clipboardResult !== undefined) {
+        return clipboardResult;
       }
 
       const normalizedKey = normalizeDomTerminalKey(event.key);
@@ -627,6 +632,19 @@ export class TerminalEmulatorRuntime {
     this.processOutputQueue();
   }
 
+  find(input: { query: string; direction: "next" | "previous"; caseSensitive?: boolean }): void {
+    const searchOptions = { caseSensitive: input.caseSensitive ?? false };
+    if (input.direction === "next") {
+      this.searchAddon?.findNext(input.query, searchOptions);
+    } else {
+      this.searchAddon?.findPrevious(input.query, searchOptions);
+    }
+  }
+
+  clearFind(): void {
+    this.searchAddon?.clearDecorations();
+  }
+
   clear(input?: { onCommitted?: () => void }): void {
     this.outputOperations.push({
       type: "clear",
@@ -754,6 +772,35 @@ export class TerminalEmulatorRuntime {
     }
   }
 
+  // Ctrl+C copies a selection instead of sending SIGINT, and Ctrl+V pastes clipboard text;
+  // both are Windows/Linux-only since macOS terminals use Cmd for copy/paste. Returns
+  // undefined when the event isn't one of these shortcuts, so the caller falls through.
+  private interceptNonMacClipboardShortcut(
+    event: KeyboardEvent,
+    terminal: Terminal,
+  ): boolean | undefined {
+    if (isMac || !event.ctrlKey || event.shiftKey || event.altKey || event.metaKey) {
+      return undefined;
+    }
+
+    const key = event.key.toLowerCase();
+    if (key === "c" && terminal.hasSelection()) {
+      void navigator.clipboard.writeText(terminal.getSelection());
+      return false;
+    }
+    if (key === "v") {
+      event.preventDefault();
+      void navigator.clipboard.readText().then((text) => {
+        if (text) {
+          terminal.paste(text);
+        }
+        return;
+      });
+      return false;
+    }
+    return true;
+  }
+
   private collectThemeBackgroundElements(input: {
     root: HTMLDivElement;
     host: HTMLDivElement;
@@ -798,6 +845,7 @@ export class TerminalEmulatorRuntime {
     this.terminal = null;
     this.fitAddon = null;
     this.fitAndEmitResize = null;
+    this.searchAddon = null;
     this.lastSize = null;
     this.themeBackgroundElements = [];
     this.suppressInput = false;

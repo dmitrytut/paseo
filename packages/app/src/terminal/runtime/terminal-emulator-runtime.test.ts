@@ -552,6 +552,29 @@ describe("terminal-emulator-runtime", () => {
     expect(refresh).toHaveBeenCalledWith(0, 11);
   });
 
+  it("delegates find to the search addon with the requested direction and query", () => {
+    const runtime = new TerminalEmulatorRuntime();
+    const findNext = vi.fn();
+    const findPrevious = vi.fn();
+    (runtime as unknown as { searchAddon: unknown }).searchAddon = { findNext, findPrevious };
+
+    runtime.find({ query: "needle", direction: "next" });
+    runtime.find({ query: "needle", direction: "previous", caseSensitive: true });
+
+    expect(findNext).toHaveBeenCalledWith("needle", { caseSensitive: false });
+    expect(findPrevious).toHaveBeenCalledWith("needle", { caseSensitive: true });
+  });
+
+  it("clears search decorations through the search addon", () => {
+    const runtime = new TerminalEmulatorRuntime();
+    const clearDecorations = vi.fn();
+    (runtime as unknown as { searchAddon: unknown }).searchAddon = { clearDecorations };
+
+    runtime.clearFind();
+
+    expect(clearDecorations).toHaveBeenCalledTimes(1);
+  });
+
   it("updates terminal scrollback without remounting", () => {
     const runtime = new TerminalEmulatorRuntime();
     const refresh = vi.fn();

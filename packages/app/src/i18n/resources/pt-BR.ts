@@ -583,6 +583,14 @@ export const ptBR: TranslationResources = {
       hostDisconnected: "Host não está conectado",
       updateHost: "Atualize o host para usar o renderizador de terminal nativo.",
       unableToSubscribe: "Não foi possível assinar o terminal",
+      find: {
+        placeholder: "Pesquisar no terminal",
+        matchCount: "{{current}} de {{total}}",
+        noMatches: "Nenhum resultado",
+        previousMatch: "Ocorrência anterior",
+        nextMatch: "Próxima ocorrência",
+        close: "Fechar pesquisa",
+      },
     },
     tabs: {
       loading: "Carregando...",

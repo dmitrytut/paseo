@@ -575,6 +575,9 @@ function NativeTerminalEmulator({
         inputRef.current?.blur();
         Keyboard.dismiss();
       },
+      // The native grid renderer has no xterm-style search backend; find is web/desktop-only.
+      find: () => {},
+      clearFind: () => {},
     }),
     [
       enqueueOutputText,

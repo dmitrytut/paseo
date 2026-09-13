@@ -579,6 +579,14 @@ export const zhCN: TranslationResources = {
       hostDisconnected: "Host 未连接",
       updateHost: "请更新主机以使用原生终端渲染器。",
       unableToSubscribe: "无法订阅 Terminal",
+      find: {
+        placeholder: "在终端中查找",
+        matchCount: "第 {{current}} 项，共 {{total}} 项",
+        noMatches: "无匹配结果",
+        previousMatch: "上一个匹配项",
+        nextMatch: "下一个匹配项",
+        close: "关闭搜索",
+      },
     },
     tabs: {
       loading: "正在加载...",
