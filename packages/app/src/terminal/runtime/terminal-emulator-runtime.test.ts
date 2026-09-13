@@ -552,7 +552,7 @@ describe("terminal-emulator-runtime", () => {
     expect(refresh).toHaveBeenCalledWith(0, 11);
   });
 
-  it("delegates find to the search addon with the requested direction and query", () => {
+  it("delegates find to the search addon with the requested direction, query, and decorations", () => {
     const runtime = new TerminalEmulatorRuntime();
     const findNext = vi.fn();
     const findPrevious = vi.fn();
@@ -561,8 +561,25 @@ describe("terminal-emulator-runtime", () => {
     runtime.find({ query: "needle", direction: "next" });
     runtime.find({ query: "needle", direction: "previous", caseSensitive: true });
 
-    expect(findNext).toHaveBeenCalledWith("needle", { caseSensitive: false });
-    expect(findPrevious).toHaveBeenCalledWith("needle", { caseSensitive: true });
+    // decorations must always be passed: xterm's SearchAddon only fires
+    // onDidChangeResults (the match count/index the find bar displays) when a
+    // find call carries decorations, so omitting it silently breaks the UI.
+    expect(findNext).toHaveBeenCalledWith(
+      "needle",
+      expect.objectContaining({
+        caseSensitive: false,
+        incremental: true,
+        decorations: expect.any(Object),
+      }),
+    );
+    expect(findPrevious).toHaveBeenCalledWith(
+      "needle",
+      expect.objectContaining({
+        caseSensitive: true,
+        incremental: true,
+        decorations: expect.any(Object),
+      }),
+    );
   });
 
   it("clears search decorations through the search addon", () => {

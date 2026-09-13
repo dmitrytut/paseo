@@ -1,7 +1,7 @@
 import { ClipboardAddon } from "@xterm/addon-clipboard";
 import { FitAddon } from "@xterm/addon-fit";
 import { ImageAddon } from "@xterm/addon-image";
-import { SearchAddon } from "@xterm/addon-search";
+import { SearchAddon, type ISearchOptions } from "@xterm/addon-search";
 import { Unicode11Addon } from "@xterm/addon-unicode11";
 import { WebLinksAddon } from "@xterm/addon-web-links";
 import { WebglAddon } from "@xterm/addon-webgl";
@@ -155,6 +155,16 @@ const OUTPUT_OPERATION_TIMEOUT_MS = 5_000;
 const EMPTY_TERMINAL_OUTPUT = new Uint8Array(0);
 const RESET_TERMINAL_OUTPUT = new Uint8Array([0x1b, 0x63]);
 const terminalOutputEncoder = new TextEncoder();
+
+// SearchAddon only fires onDidChangeResults when decorations are provided on every
+// find call — without this, findNext/findPrevious silently succeed but the result
+// count and index are never reported, so the find UI would show "no results" forever.
+const FIND_DECORATIONS = {
+  matchBackground: "#f5d67b",
+  matchOverviewRuler: "#f5d67b",
+  activeMatchBackground: "#f9a916",
+  activeMatchColorOverviewRuler: "#f9a916",
+};
 
 export function encodeTerminalOutput(text: string): TerminalOutputData {
   return terminalOutputEncoder.encode(text);
@@ -644,7 +654,11 @@ export class TerminalEmulatorRuntime {
   }
 
   find(input: TerminalFindInput): void {
-    const searchOptions = { caseSensitive: input.caseSensitive ?? false };
+    const searchOptions: ISearchOptions = {
+      caseSensitive: input.caseSensitive ?? false,
+      incremental: true,
+      decorations: FIND_DECORATIONS,
+    };
     if (input.direction === "next") {
       this.searchAddon?.findNext(input.query, searchOptions);
     } else {
