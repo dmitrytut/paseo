@@ -63,7 +63,7 @@ export interface TerminalEmulatorRuntimeCallbacks {
   ) => Promise<void> | void;
   onInputModeChange?: (state: TerminalInputModeState) => Promise<void> | void;
   onFindRequested?: () => void;
-  onFindResultsChange?: (input: { resultIndex: number; resultCount: number }) => void;
+  onFindResultsChange?: (input: TerminalFindResultsChange) => void;
 }
 
 export interface TerminalResizeEvent {
@@ -71,6 +71,17 @@ export interface TerminalResizeEvent {
   cols: number;
   shouldClaim: boolean;
   forceClaim?: boolean;
+}
+
+export interface TerminalFindInput {
+  query: string;
+  direction: "next" | "previous";
+  caseSensitive?: boolean;
+}
+
+export interface TerminalFindResultsChange {
+  resultIndex: number;
+  resultCount: number;
 }
 
 export interface TerminalResizeRequest {
@@ -632,7 +643,7 @@ export class TerminalEmulatorRuntime {
     this.processOutputQueue();
   }
 
-  find(input: { query: string; direction: "next" | "previous"; caseSensitive?: boolean }): void {
+  find(input: TerminalFindInput): void {
     const searchOptions = { caseSensitive: input.caseSensitive ?? false };
     if (input.direction === "next") {
       this.searchAddon?.findNext(input.query, searchOptions);

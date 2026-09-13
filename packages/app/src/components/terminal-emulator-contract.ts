@@ -2,7 +2,11 @@ import type { Ref } from "react";
 import type { ITheme } from "@xterm/xterm";
 import type { TerminalState } from "@getpaseo/protocol/messages";
 import type { TerminalInputModeState } from "@getpaseo/protocol/terminal-input-mode";
-import type { TerminalOutputData } from "../terminal/runtime/terminal-emulator-runtime";
+import type {
+  TerminalFindInput,
+  TerminalFindResultsChange,
+  TerminalOutputData,
+} from "../terminal/runtime/terminal-emulator-runtime";
 import type {
   TerminalLocalFileLinkSource,
   TerminalLocalFileLinkTarget,
@@ -21,7 +25,7 @@ export interface TerminalEmulatorHandle {
   claimSize: () => void;
   showKeyboard: () => void;
   blur: () => void;
-  find: (input: { query: string; direction: "next" | "previous"; caseSensitive?: boolean }) => void;
+  find: (input: TerminalFindInput) => void;
   clearFind: () => void;
 }
 
@@ -60,7 +64,7 @@ export interface TerminalEmulatorProps {
   onInputModeChange?: (state: TerminalInputModeState) => Promise<void> | void;
   onSelectionChange?: (hasSelection: boolean) => void;
   onFindRequested?: () => void;
-  onFindResultsChange?: (input: { resultIndex: number; resultCount: number }) => void;
+  onFindResultsChange?: (input: TerminalFindResultsChange) => void;
   onResolveLocalFileLink?: (
     source: TerminalLocalFileLinkSource,
   ) => Promise<TerminalLocalFileLinkTarget | null> | TerminalLocalFileLinkTarget | null;

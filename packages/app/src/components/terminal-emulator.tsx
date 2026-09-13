@@ -21,6 +21,8 @@ import type { TerminalInputModeState } from "@getpaseo/protocol/terminal-input-m
 import type { PendingTerminalModifiers } from "../utils/terminal-keys";
 import {
   TerminalEmulatorRuntime,
+  type TerminalFindInput,
+  type TerminalFindResultsChange,
   type TerminalOutputData,
 } from "../terminal/runtime/terminal-emulator-runtime";
 import { encodeTerminalPaste } from "../terminal/runtime/terminal-paste";
@@ -50,7 +52,7 @@ export interface TerminalEmulatorHandle {
   claimSize: () => void;
   showKeyboard: () => void;
   blur: () => void;
-  find: (input: { query: string; direction: "next" | "previous"; caseSensitive?: boolean }) => void;
+  find: (input: TerminalFindInput) => void;
   clearFind: () => void;
 }
 
@@ -131,7 +133,7 @@ interface TerminalEmulatorProps {
   onPendingModifiersConsumed?: () => Promise<void> | void;
   onInputModeChange?: (state: TerminalInputModeState) => Promise<void> | void;
   onFindRequested?: () => void;
-  onFindResultsChange?: (input: { resultIndex: number; resultCount: number }) => void;
+  onFindResultsChange?: (input: TerminalFindResultsChange) => void;
   onSelectionChange?: (hasSelection: boolean) => void;
   onResolveLocalFileLink?: (
     source: TerminalLocalFileLinkSource,
@@ -160,9 +162,7 @@ function isTerminalState(value: unknown): value is TerminalState {
   );
 }
 
-function isFindInput(
-  value: unknown,
-): value is { query: string; direction: "next" | "previous"; caseSensitive?: boolean } {
+function isFindInput(value: unknown): value is TerminalFindInput {
   if (typeof value !== "object" || value === null) {
     return false;
   }
@@ -342,7 +342,7 @@ export default function TerminalEmulator({
       blur: () => {
         runtimeRef.current?.blur();
       },
-      find: (input: { query: string; direction: "next" | "previous"; caseSensitive?: boolean }) => {
+      find: (input: TerminalFindInput) => {
         runtimeRef.current?.find(input);
       },
       clearFind: () => {
